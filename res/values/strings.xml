@@ -26,6 +26,8 @@
     <string name="pref_plugin_contacts_desc">Allow synchronizing the device\'s contacts book</string>
     <string name="pref_plugin_ping">Ping</string>
     <string name="pref_plugin_ping_desc">Send and receive pings</string>
+    <string name="pref_plugin_hello">Hello</string>
+    <string name="pref_plugin_hello_desc">Send and receive hellos</string>
     <string name="pref_plugin_notifications">Notification sync</string>
     <string name="pref_plugin_notifications_desc">Access your notifications from other devices</string>
     <string name="pref_plugin_receive_notifications">Receive notifications</string>
