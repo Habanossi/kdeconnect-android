@@ -20,14 +20,21 @@
 
 package org.kde.kdeconnect.Plugins.HelloPlugin;
 
+import android.Manifest;
 import android.app.Activity;
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.media.MediaPlayer;
+import android.media.MediaRecorder;
+import android.os.Environment;
+import android.provider.MediaStore;
 import android.util.Log;
 
+import androidx.core.app.ActivityCompat;
 import androidx.core.app.NotificationCompat;
 
 import org.kde.kdeconnect.Helpers.NotificationHelper;
@@ -36,6 +43,11 @@ import org.kde.kdeconnect.Plugins.Plugin;
 import org.kde.kdeconnect.Plugins.PluginFactory;
 import org.kde.kdeconnect.UserInterface.MainActivity;
 import org.kde.kdeconnect_tp.R;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.Timer;
+import java.util.TimerTask;
 
 @PluginFactory.LoadablePlugin
 public class HelloPlugin extends Plugin {
@@ -111,14 +123,63 @@ public class HelloPlugin extends Plugin {
     @Override
     public void startMainActivity(Activity activity) {
         if (device != null) {
-            device.sendPacket(new NetworkPacket(PACKET_TYPE_HELLO));
+            String message = "";
+
+            if (ActivityCompat.checkSelfPermission(activity, Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED) {
+                ActivityCompat.requestPermissions(activity, new String[]{Manifest.permission.RECORD_AUDIO},
+                        10);
+                Log.e("audiorecord", "permission for microphone questioned");
+            } else if(ActivityCompat.checkSelfPermission(activity, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED){
+                ActivityCompat.requestPermissions(activity, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},
+                        10);
+                Log.e("audiorecord", "permission for writing in external storage questioned");
+            } else {
+                Log.e("AudioRecord","Permission for microphone granted");
+                File file = new File(Environment.getExternalStorageDirectory().getAbsolutePath(), "MediaRecorderSample");
+
+               if (!file.exists())
+                    file.mkdirs();
+
+               //AudioRec.startRecording();
+              // message = AudioRec.stopRecording();
+                AudioRec.Record();
+               // int s = 0;
+               // AudioRec.setCalc(1);
+                /*while(AudioRec.getCalc() == 1){
+                    s++;
+                    try {
+                        Thread.sleep(1000);
+                        Log.e("Hello", "sleep " + s);
+                    }catch(InterruptedException e ){
+                        Log.e("Hello","No Sleep");
+                    }
+                }*/
+
+/*
+                final MediaRecorder myAudioRecorder = new MediaRecorder();
+                String outputFile;
+                outputFile = file.getAbsolutePath() + "/.mp4";
+
+
+                myAudioRecorder.setOutputFile(outputFile);
+                AudioRec.record(myAudioRecorder);*/
+
+               /* MediaPlayer mediaPlayer = new MediaPlayer();
+                try {
+                    mediaPlayer.setDataSource(outputFile);
+                    mediaPlayer.prepare();
+                    mediaPlayer.start();
+                } catch (Exception e) {
+                    // make something
+                }*/
+            }
+            message = AudioRec.getMessage();
+            NetworkPacket np = new NetworkPacket(PACKET_TYPE_HELLO);
+            np.set("message", message);
+            device.sendPacket(np);
             Log.e("HelloPacketSender", "message sent");
-            /*mAudioFingerprint = new AudioFingerprint(/*this mHandler, sorg.kde.kdeconnect.Plugins.HelloPlugin.Timer mTimer);
-            /*mAudioFingerprint.initialize();
-            mAudioFingerprint.startSampling(200);
-            mAudioFingerprint.saveRecordedData();
-            mAudioFingerprint.calculateFingerprint(200);
-            mAudioFingerprint.getFingerprint(200);*/
+
+
         }
     }
 

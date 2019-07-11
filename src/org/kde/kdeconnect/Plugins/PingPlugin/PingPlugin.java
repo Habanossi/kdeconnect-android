@@ -73,7 +73,7 @@ public class PingPlugin extends Plugin {
         String message;
         if (np.has("message")) {
             message = np.getString("message");
-            Log.e("HelloPacketSender", message + "is the message");
+            Log.e("HelloPacketSender", message + " is the message");
             id = (int) System.currentTimeMillis();
         } else {
             message = "Ping!";
