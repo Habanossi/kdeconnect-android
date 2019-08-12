@@ -123,59 +123,8 @@ public class HelloPlugin extends Plugin {
     @Override
     public void startMainActivity(Activity activity) {
         if (device != null) {
-            String message = "";
 
-            if (ActivityCompat.checkSelfPermission(activity, Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED) {
-                ActivityCompat.requestPermissions(activity, new String[]{Manifest.permission.RECORD_AUDIO},
-                        10);
-                Log.e("audiorecord", "permission for microphone questioned");
-            } else if(ActivityCompat.checkSelfPermission(activity, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED){
-                ActivityCompat.requestPermissions(activity, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},
-                        10);
-                Log.e("audiorecord", "permission for writing in external storage questioned");
-            } else {
-                Log.e("AudioRecord","Permission for microphone granted");
-                File file = new File(Environment.getExternalStorageDirectory().getAbsolutePath(), "MediaRecorderSample");
-
-               if (!file.exists())
-                    file.mkdirs();
-
-               //AudioRec.startRecording();
-              // message = AudioRec.stopRecording();
-                AudioRec.Record();
-               // int s = 0;
-               // AudioRec.setCalc(1);
-                /*while(AudioRec.getCalc() == 1){
-                    s++;
-                    try {
-                        Thread.sleep(1000);
-                        Log.e("Hello", "sleep " + s);
-                    }catch(InterruptedException e ){
-                        Log.e("Hello","No Sleep");
-                    }
-                }*/
-
-/*
-                final MediaRecorder myAudioRecorder = new MediaRecorder();
-                String outputFile;
-                outputFile = file.getAbsolutePath() + "/.mp4";
-
-
-                myAudioRecorder.setOutputFile(outputFile);
-                AudioRec.record(myAudioRecorder);*/
-
-               /* MediaPlayer mediaPlayer = new MediaPlayer();
-                try {
-                    mediaPlayer.setDataSource(outputFile);
-                    mediaPlayer.prepare();
-                    mediaPlayer.start();
-                } catch (Exception e) {
-                    // make something
-                }*/
-            }
-            message = AudioRec.getMessage();
             NetworkPacket np = new NetworkPacket(PACKET_TYPE_HELLO);
-            np.set("message", message);
             device.sendPacket(np);
             Log.e("HelloPacketSender", "message sent");
 
