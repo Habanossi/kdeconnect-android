@@ -28,9 +28,13 @@ import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.Environment;
 import android.util.Log;
 
+import org.apache.commons.net.ntp.NTPUDPClient;
+import org.apache.commons.net.ntp.TimeInfo;
 import org.kde.kdeconnect.Helpers.NotificationHelper;
 import org.kde.kdeconnect.NetworkPacket;
 import org.kde.kdeconnect.Plugins.Plugin;
@@ -41,16 +45,21 @@ import org.kde.kdeconnect_tp.R;
 import androidx.core.app.ActivityCompat;
 import androidx.core.app.NotificationCompat;
 import java.io.File;
+import java.io.IOException;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+import java.util.Date;
 
 import static java.lang.System.exit;
 
 @PluginFactory.LoadablePlugin
 public class PingPlugin extends Plugin {
-
+    private static Context ctx;
     private final static String PACKET_TYPE_PING = "kdeconnect.ping";
     int i = 1;
     String messageLapTop = "";
     String messagePhone = "";
+    private static String TAG = "FingerPrint";
 
     @Override
     public String getDisplayName() {
@@ -61,11 +70,34 @@ public class PingPlugin extends Plugin {
     public String getDescription() {
         return context.getResources().getString(R.string.pref_plugin_ping_desc);
     }
+    public static final String TIME_SERVER = "fi.pool.ntp.org";
+
+    public static long getCurrentNetworkTime() {
+        NTPUDPClient timeClient = new NTPUDPClient();
+        long string = 0;
+        try{
+            InetAddress inetAddress = InetAddress.getByName(TIME_SERVER);
+            try{
+                TimeInfo timeInfo = timeClient.getTime(inetAddress);
+                long returnTime = timeInfo.getMessage().getTransmitTimeStamp().getTime();   //server time
+                Date time = new Date(returnTime);
+                Log.d(TAG, "Time from " + TIME_SERVER + ": " + time);
+                string = returnTime;
+            }catch(IOException I1){
+                I1.printStackTrace();
+            }
+        }catch(UnknownHostException u1){
+            Log.e(TAG, "Unknown Host");
+        }
+
+        //long returnTime = timeInfo.getReturnTime();   //local device time
+        return string;
+    }
 
     @Override
     public boolean onPacketReceived(NetworkPacket np) {
-
-
+       // long time = getCurrentNetworkTime();
+       // Log.e(TAG, "Time from apache: " + String.valueOf(time));
         if (!np.getType().equals(PACKET_TYPE_PING)) {
             Log.e("PingPlugin", "Ping plugin should not receive packets other than pings!");
             return false;
@@ -94,11 +126,12 @@ public class PingPlugin extends Plugin {
             id = 42; //A unique id to create only one notification
         }
         if(i == 1) {
+            String con = String.valueOf(message.substring(0,4));
             NotificationManager notificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
 
             Notification noti = new NotificationCompat.Builder(context, NotificationHelper.Channels.DEFAULT)
                     .setContentTitle(device.getName())
-                    .setContentText(message)
+                    .setContentText(con)
                     .setContentIntent(resultPendingIntent)
                     .setTicker(message)
                     .setSmallIcon(R.drawable.ic_notification)
@@ -109,10 +142,15 @@ public class PingPlugin extends Plugin {
 
             NotificationHelper.notifyCompat(notificationManager, id, noti);
             NetworkPacket npp = new NetworkPacket(PACKET_TYPE_PING);
-            npp.set("message", String.valueOf(System.currentTimeMillis()));
+            npp.set("message", String.valueOf(getCurrentNetworkTime()));
             device.sendPacket(npp);
-            AudioRec.waitTime = System.currentTimeMillis() + 2000;
-    /*
+            message = np.getString("message");
+            String wait = message.substring(4);
+            AudioRec.waitTime = Long.parseLong(message.substring(4)) + 3000;
+            Log.e(TAG,"Waittime: " + String.valueOf(AudioRec.waitTime-getCurrentNetworkTime()));
+           // Log.e("mf", "device clock: " + String.valueOf(getCurrentNetworkTime()));
+            //Log.e("mf", "   laptop clock: " + message);
+            /*
             if (ActivityCompat.checkSelfPermission(activity, Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED) {
                 ActivityCompat.requestPermissions(activity, new String[]{Manifest.permission.RECORD_AUDIO},
                         10);
@@ -128,6 +166,12 @@ public class PingPlugin extends Plugin {
             // message = AudioRec.getMessage();
             messagePhone = AudioRec.getMessage();
             AudioRec.flush();
+            //NotificationHelper.notifyCompat(notificationManager, id, noti);
+            messagePhone += "x";
+            np = new NetworkPacket(PACKET_TYPE_PING);
+            np.set("message", messagePhone);
+            device.sendPacket(np);
+            messagePhone = "";
         }
         /*else {
             int matchCount = 0;
@@ -140,7 +184,8 @@ public class PingPlugin extends Plugin {
             Log.e("hm", "Amount of matching points in fingerprints: " + String.valueOf(matchCount));
         }*/
         Log.e("hm","All done.");
-        if(i == 1) i = 0;
+
+        //if(i == 1) i = 0;
        // else i = 1;
       //  messagePhone = "";
         return true;
@@ -155,6 +200,7 @@ public class PingPlugin extends Plugin {
     @Override
     public void startMainActivity(Activity activity) {
         if (device != null) {
+
             messagePhone += "x";
             if(i == 10) {
                 if (ActivityCompat.checkSelfPermission(activity, Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED) {
@@ -180,6 +226,7 @@ public class PingPlugin extends Plugin {
             device.sendPacket(np);
             Log.e("HelloPacketSender", "message sent");
             AudioRec.flush();
+            messagePhone = "";
             i = 1;
         }
     }
