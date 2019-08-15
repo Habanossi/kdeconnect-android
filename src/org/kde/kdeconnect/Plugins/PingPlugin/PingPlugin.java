@@ -54,11 +54,10 @@ import static java.lang.System.exit;
 
 @PluginFactory.LoadablePlugin
 public class PingPlugin extends Plugin {
-    private static Context ctx;
     private final static String PACKET_TYPE_PING = "kdeconnect.ping";
-    int i = 1;
-    String messageLapTop = "";
-    String messagePhone = "";
+    private int i = 1;
+    private String messageLapTop = "";
+    private String messagePhone = "";
     private static String TAG = "FingerPrint";
 
     @Override
@@ -70,27 +69,30 @@ public class PingPlugin extends Plugin {
     public String getDescription() {
         return context.getResources().getString(R.string.pref_plugin_ping_desc);
     }
-    public static final String TIME_SERVER = "fi.pool.ntp.org";
+    public static final String TIME_SERVER = "pool.ntp.org";
 
     public static long getCurrentNetworkTime() {
         NTPUDPClient timeClient = new NTPUDPClient();
+        timeClient.setDefaultTimeout(5000);
         long string = 0;
         try{
             InetAddress inetAddress = InetAddress.getByName(TIME_SERVER);
             try{
+                timeClient.open();
                 TimeInfo timeInfo = timeClient.getTime(inetAddress);
                 long returnTime = timeInfo.getMessage().getTransmitTimeStamp().getTime();   //server time
                 Date time = new Date(returnTime);
                 Log.d(TAG, "Time from " + TIME_SERVER + ": " + time);
                 string = returnTime;
             }catch(IOException I1){
-                I1.printStackTrace();
+                Log.e(TAG, "Can't get response from server.");
             }
         }catch(UnknownHostException u1){
             Log.e(TAG, "Unknown Host");
         }
 
         //long returnTime = timeInfo.getReturnTime();   //local device time
+        timeClient.close();
         return string;
     }
 
@@ -126,7 +128,7 @@ public class PingPlugin extends Plugin {
             id = 42; //A unique id to create only one notification
         }
         if(i == 1) {
-            String con = String.valueOf(message.substring(0,4));
+            String con = message.substring(0,4);
             NotificationManager notificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
 
             Notification noti = new NotificationCompat.Builder(context, NotificationHelper.Channels.DEFAULT)
@@ -147,7 +149,7 @@ public class PingPlugin extends Plugin {
             message = np.getString("message");
             String wait = message.substring(4);
             AudioRec.waitTime = Long.parseLong(message.substring(4)) + 3000;
-            Log.e(TAG,"Waittime: " + String.valueOf(AudioRec.waitTime-getCurrentNetworkTime()));
+            Log.e(TAG,"Waittime: " + (AudioRec.waitTime-getCurrentNetworkTime()));
            // Log.e("mf", "device clock: " + String.valueOf(getCurrentNetworkTime()));
             //Log.e("mf", "   laptop clock: " + message);
             /*

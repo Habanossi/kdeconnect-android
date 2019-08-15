@@ -110,4 +110,5 @@ dependencies {
     implementation project(path: ':ejml-core-0.38')
     implementation 'com.github.instacart.truetime-android:library:3.3'
     implementation 'commons-net:commons-net:3.6'
+    implementation 'org.apache.commons:commons-math3:3.6'
 }
