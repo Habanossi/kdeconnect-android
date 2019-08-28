@@ -26,8 +26,8 @@
     <string name="pref_plugin_contacts_desc">Allow synchronizing the device\'s contacts book</string>
     <string name="pref_plugin_ping">Ping</string>
     <string name="pref_plugin_ping_desc">Send and receive pings</string>
-    <string name="pref_plugin_hello">Hello</string>
-    <string name="pref_plugin_hello_desc">Send and receive hellos</string>
+    <string name="pref_plugin_privacy">Privacy</string>
+    <string name="pref_plugin_privacy_desc">Send and receive privacy updates</string>
     <string name="pref_plugin_notifications">Notification sync</string>
     <string name="pref_plugin_notifications_desc">Access your notifications from other devices</string>
     <string name="pref_plugin_receive_notifications">Receive notifications</string>
@@ -43,6 +43,7 @@
     <string name="no_permission_mprisreceiver">To be able to control your media players you need to grant access to the notifications</string>
     <string name="no_permissions_remotekeyboard">To receive keypresses you need to activate the KDE Connect Remote Keyboard</string>
     <string name="send_ping">Send ping</string>
+    <string name="send_privacy">Start privacy test</string>
     <string name="open_mpris_controls">Multimedia control</string>
     <string name="remotekeyboard_editing_only" translatable="false">remotekeyboard_editing_only</string>
     <string name="remotekeyboard_editing_only_title" translatable="true">Handle remote keys only when editing</string>
